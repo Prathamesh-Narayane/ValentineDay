@@ -2,8 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Heart Pop: Survival</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Heart Pop: Target Tracker</title>
     <style>
       body {
         font-family: "Segoe UI", sans-serif;
@@ -13,11 +16,12 @@
         height: 100vh;
         color: white;
         user-select: none;
+        touch-action: manipulation;
       }
 
       #ui-layer {
         position: absolute;
-        top: 15px;
+        top: 10px;
         width: 100%;
         display: flex;
         flex-direction: column;
@@ -26,32 +30,48 @@
         pointer-events: none;
       }
 
-      #target-info {
-        color: #ff69b4;
-        font-size: 1.1rem;
-        margin-bottom: 5px;
-        text-transform: uppercase;
-        letter-spacing: 2px;
+      #progress-container {
+        width: 80%;
+        max-width: 300px;
+        height: 12px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        margin-bottom: 10px;
+        border: 1px solid rgba(255, 105, 180, 0.3);
+        overflow: hidden;
+      }
+
+      #progress-bar {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #ff69b4, #ff1493);
+        transition: width 0.3s ease;
       }
 
       #scoreboard {
-        background: rgba(0, 0, 0, 0.6);
-        backdrop-filter: blur(10px);
-        padding: 10px 25px;
-        border-radius: 15px;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(8px);
+        padding: 10px 20px;
+        border-radius: 20px;
         border: 1px solid #ff69b4;
         display: none;
-        text-align: center;
+        justify-content: space-around;
+        width: 85%;
+        max-width: 400px;
       }
 
       .stat {
-        margin: 0 10px;
         font-weight: bold;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
       }
       #lives {
         color: #ff4d4d;
-        letter-spacing: 2px;
+      }
+      #target-text {
+        font-size: 0.8rem;
+        color: #ff69b4;
+        text-transform: uppercase;
+        margin-bottom: 4px;
       }
 
       .screen {
@@ -64,31 +84,32 @@
         justify-content: center;
         z-index: 100;
         text-align: center;
+        padding: 20px;
       }
 
       button {
-        padding: 15px 40px;
+        padding: 15px 45px;
         font-size: 1.2rem;
         background: #ff1493;
         border: none;
         color: white;
-        border-radius: 8px;
+        border-radius: 50px;
         cursor: pointer;
-        margin-top: 20px;
-      }
-
-      #container {
-        width: 100%;
-        height: 100%;
-        position: relative;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(255, 20, 147, 0.4);
+        margin: 10px;
       }
 
       .entity {
         position: absolute;
         bottom: -100px;
         font-size: 60px;
-        cursor: crosshair;
         animation: floatUp linear forwards;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-width: 80px;
+        min-height: 80px;
       }
 
       @keyframes floatUp {
@@ -101,12 +122,13 @@
         position: absolute;
         font-weight: bold;
         pointer-events: none;
+        font-size: 1.8rem;
         animation: fadeUp 0.6s forwards;
       }
 
       @keyframes fadeUp {
         to {
-          transform: translateY(-40px);
+          transform: translateY(-80px);
           opacity: 0;
         }
       }
@@ -114,28 +136,49 @@
   </head>
   <body>
     <div id="start-screen" class="screen">
-      <h1 style="color: #ff69b4">🏹 Heart Pop Survival</h1>
-      <p>TARGET: <b>50 Points</b> in 30 Seconds</p>
-      <p>⚠️ 3 💣 = INSTANT LOSE</p>
-      <button onclick="startGame()">Start Mission</button>
+      <h1 style="color: #ff69b4">💖 Target: 50</h1>
+      <h3 style="color: #ff69b4">
+        The Mission Target: Get 50 points in 30 seconds. ❤️ Hearts: +1 Point. ✨
+        Sparkles: +5 Points. 💣 Bombs: Avoid! (3 hits = Game Over).
+      </h3>
+
+      <p>Win the game to unlock your Rose Gift! 🌹</p>
+      <button id="start-btn">Start Mission</button>
     </div>
 
     <div id="ui-layer">
-      <div id="target-info">Target: 50</div>
+      <div id="target-text">Target Progress</div>
+      <div id="progress-container">
+        <div id="progress-bar"></div>
+      </div>
       <div id="scoreboard">
-        <span class="stat">Time: <span id="time">30</span></span>
-        <span class="stat">Score: <span id="score">0</span></span>
-        <span class="stat">Lives: <span id="lives">♥♥♥</span></span>
+        <span class="stat">⏱️ <span id="time">30</span></span>
+        <span class="stat">🏆 <span id="score">0</span>/50</span>
+        <span class="stat"><span id="lives">♥♥♥</span></span>
       </div>
     </div>
 
     <div id="container"></div>
 
     <div id="end-screen" class="screen" style="display: none">
-      <h1 id="end-title">Game Over</h1>
+      <h1 id="end-title">Status</h1>
       <p id="end-msg"></p>
-      <p>Final Score: <span id="final-score">0</span></p>
-      <button onclick="location.reload()">Try Again</button>
+      <h2
+        id="final-score"
+        style="color: #ff69b4; font-size: 3rem; margin: 10px 0"
+      >
+        0
+      </h2>
+
+      <button
+        id="gift-btn"
+        style="display: none; background: #e91e63"
+        onclick="window.location.href = 'Rose.html'"
+      >
+        🌹 Open Your Gift
+      </button>
+
+      <button onclick="location.reload()">Play Again</button>
     </div>
 
     <script>
@@ -143,15 +186,24 @@
       const scoreEl = document.getElementById("score");
       const timeEl = document.getElementById("time");
       const livesEl = document.getElementById("lives");
+      const progressBar = document.getElementById("progress-bar");
+      const startBtn = document.getElementById("start-btn");
 
       let score = 0;
       let timeLeft = 30;
       let lives = 3;
       let gameActive = false;
-      const TARGET_SCORE = 50;
+      const TARGET_SCORE = 10;
 
-      function updateLivesDisplay() {
+      function updateUI() {
+        scoreEl.textContent = score;
+        const progress = Math.min((score / TARGET_SCORE) * 100, 100);
+        progressBar.style.width = progress + "%";
         livesEl.textContent = "♥".repeat(lives) + "🖤".repeat(3 - lives);
+
+        if (score >= TARGET_SCORE) {
+          progressBar.style.background = "#4CAF50";
+        }
       }
 
       function createEntity() {
@@ -164,35 +216,54 @@
         let type;
 
         if (rand > 85) {
-          // Bomb
-          type = { icon: "💣", pts: 0, life: -1, color: "red", text: "OUCH!" };
+          type = {
+            icon: "💣",
+            pts: 0,
+            life: -1,
+            color: "#ff4d4d",
+            text: "💥",
+            vibe: 100,
+          };
         } else if (rand > 70) {
-          // Star
-          type = { icon: "✨", pts: 5, life: 0, color: "gold", text: "+5" };
+          type = {
+            icon: "✨",
+            pts: 5,
+            life: 0,
+            color: "#ffd700",
+            text: "+5",
+            vibe: 20,
+          };
         } else {
-          // Heart
-          type = { icon: "❤️", pts: 1, life: 0, color: "#ff69b4", text: "+1" };
+          type = {
+            icon: "❤️",
+            pts: 1,
+            life: 0,
+            color: "#ff69b4",
+            text: "+1",
+            vibe: 10,
+          };
         }
 
         entity.innerHTML = type.icon;
-        entity.style.left = Math.random() * (window.innerWidth - 70) + "px";
-        entity.style.animationDuration = Math.random() * 2 + 2 + "s";
+        entity.style.left = Math.random() * (window.innerWidth - 80) + "px";
+        entity.style.animationDuration = Math.random() * 1.5 + 2 + "s";
 
-        entity.onmousedown = (e) => {
+        const handlePop = (e) => {
+          e.preventDefault();
           if (!gameActive) return;
-
+          const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+          const clientY = e.clientY || (e.touches ? e.touches[0].clientY : 0);
           score += type.pts;
           lives += type.life;
-
-          scoreEl.textContent = score;
-          updateLivesDisplay();
-          popText(e.clientX, e.clientY, type.text, type.color);
-
+          if (navigator.vibrate) navigator.vibrate(type.vibe);
+          updateUI();
+          popText(clientX, clientY, type.text, type.color);
           entity.remove();
-
           if (lives <= 0) endGame("LOSE");
         };
 
+        entity.addEventListener("touchstart", handlePop, { passive: false });
+        entity.addEventListener("mousedown", handlePop);
         entity.onanimationend = () => entity.remove();
         container.appendChild(entity);
       }
@@ -200,8 +271,8 @@
       function popText(x, y, txt, color) {
         const div = document.createElement("div");
         div.className = "pop-text";
-        div.style.left = x + "px";
-        div.style.top = y + "px";
+        div.style.left = x - 20 + "px";
+        div.style.top = y - 20 + "px";
         div.style.color = color;
         div.textContent = txt;
         container.appendChild(div);
@@ -210,14 +281,12 @@
 
       function startGame() {
         document.getElementById("start-screen").style.display = "none";
-        document.getElementById("scoreboard").style.display = "block";
+        document.getElementById("scoreboard").style.display = "flex";
         gameActive = true;
-
         const spawner = setInterval(createEntity, 400);
         const timer = setInterval(() => {
           timeLeft--;
           timeEl.textContent = timeLeft;
-
           if (timeLeft <= 0) {
             clearInterval(spawner);
             clearInterval(timer);
@@ -235,24 +304,31 @@
         const screen = document.getElementById("end-screen");
         const title = document.getElementById("end-title");
         const msg = document.getElementById("end-msg");
+        const giftBtn = document.getElementById("gift-btn");
 
         screen.style.display = "flex";
         document.getElementById("final-score").textContent = score;
 
         if (reason === "WIN") {
-          title.textContent = "VICTORY! 🎉";
+          title.textContent = "MISSION COMPLETE! 🏆";
           title.style.color = "#4CAF50";
-          msg.textContent = "Target reached! You are a Heart Hunter!";
+          msg.textContent = "Target smashed! You've unlocked a gift.";
+          giftBtn.style.display = "inline-block"; // Show the gift button
+          if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
         } else if (reason === "LOSE_SCORE") {
-          title.textContent = "MISSION FAILED";
+          title.textContent = "OUT OF TIME";
           title.style.color = "#ff4d4d";
-          msg.textContent = `You needed ${TARGET_SCORE} points, but only got ${score}.`;
+          msg.textContent = `Target was 50. Try again for your gift!`;
+          giftBtn.style.display = "none";
         } else {
-          title.textContent = "BOOM! 💥";
+          title.textContent = "WOUNDED! 💥";
           title.style.color = "#ff4d4d";
-          msg.textContent = "You hit too many bombs!";
+          msg.textContent = "Too many bombs. Watch your step!";
+          giftBtn.style.display = "none";
         }
       }
+
+      startBtn.addEventListener("click", startGame);
     </script>
   </body>
 </html>

@@ -210,7 +210,7 @@
   </head>
   <body>
     <header id="mainHeader">
-      <h1>💖 Valentine Quest 💖</h1>
+      <h1>💖 Valentine Quest For Leena 💖</h1>
       <p>Unlocks every day at 12:00 PM</p>
     </header>
 
@@ -281,9 +281,11 @@
       }
       createHearts();
 
+      // Added 'dayName' property to each quest object
       const quests = [
         {
           day: 7,
+          dayName: "Saturday",
           name: "Rose Day",
           riddle: "I am red, I have thorns, but I smell sweet. What am I?",
           answer: "rose",
@@ -291,6 +293,7 @@
         },
         {
           day: 8,
+          dayName: "Sunday",
           name: "Propose Day",
           riddle: "Starts with 'Will', ends with 'Valentine?'",
           answer: "will you be my valentine",
@@ -298,6 +301,7 @@
         },
         {
           day: 9,
+          dayName: "Monday",
           name: "Chocolate Day",
           riddle: "Sweet, brown, and melts in your mouth.",
           answer: "chocolate",
@@ -305,6 +309,7 @@
         },
         {
           day: 10,
+          dayName: "Tuesday",
           name: "Teddy Day",
           riddle: "Soft, fluffy, and loves to be hugged.",
           answer: "teddy",
@@ -312,6 +317,7 @@
         },
         {
           day: 11,
+          dayName: "Wednesday",
           name: "Promise Day",
           riddle: "A word given that must never be broken.",
           answer: "promise",
@@ -319,6 +325,7 @@
         },
         {
           day: 12,
+          dayName: "Thursday",
           name: "Hug Day",
           riddle: "Wrapping arms around each other.",
           answer: "hug",
@@ -326,6 +333,7 @@
         },
         {
           day: 13,
+          dayName: "Friday",
           name: "Kiss Day",
           riddle: "A silent 'I love you' using lips.",
           answer: "kiss",
@@ -333,6 +341,7 @@
         },
         {
           day: 14,
+          dayName: "Saturday",
           name: "Valentine's Day",
           riddle: "Who is my favorite person? (Y_ _)",
           answer: "you",
@@ -362,10 +371,12 @@
             const h = Math.floor(diff / 3600000);
             const m = Math.floor((diff % 3600000) / 60000);
             const s = Math.floor((diff % 60000) / 1000);
-            card.innerHTML = `<h3>Feb ${q.day}</h3><p style="font-size:0.7rem">Locked 🔒</p><div class="countdown-text">Unlocks at 12 PM in:<br>${h}h ${m}m ${s}s</div>`;
+            // Added q.name here inside the locked state
+            card.innerHTML = `<h3>Feb ${q.day}</h3><p style="margin:0; font-weight:600; color:var(--dark-pink); font-size:0.8rem">${q.name}</p><p style="font-size:0.7rem">Locked 🔒</p><div class="countdown-text">Unlocks at 12 PM in:<br>${h}h ${m}m ${s}s</div>`;
           } else {
             card.className = "day-card unlocked-time";
-            card.innerHTML = `<h3>Feb ${q.day}</h3><p style="font-size:0.7rem; color:var(--primary-pink)">Ready to Unlock 🔓</p><span style="font-size:1.2rem">🎁</span>`;
+            // Added q.name here inside the unlocked state
+            card.innerHTML = `<h3>Feb ${q.day}</h3><p style="margin:0; font-weight:600; color:var(--dark-pink); font-size:0.8rem">${q.name}</p><p style="font-size:0.7rem; color:var(--primary-pink)">Ready to Unlock 🔓</p><span style="font-size:1.2rem">🎁</span>`;
             card.onclick = () => openModal(index);
           }
           timeline.appendChild(card);
@@ -396,7 +407,7 @@
 
           // Define the custom pages for each day
           const customPages = {
-            7: "Rose.html",
+            7: "popballon.html",
             8: "Propose.html",
             9: "Chocolate.html",
             10: "Teddy.html",
