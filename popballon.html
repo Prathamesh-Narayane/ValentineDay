@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Heart Pop: Survival</title>
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        margin: 0;
+        overflow: hidden;
+        background: radial-gradient(circle, #2d0a1a 0%, #050103 100%);
+        height: 100vh;
+        color: white;
+        user-select: none;
+      }
+
+      #ui-layer {
+        position: absolute;
+        top: 15px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        z-index: 10;
+        pointer-events: none;
+      }
+
+      #target-info {
+        color: #ff69b4;
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+      }
+
+      #scoreboard {
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(10px);
+        padding: 10px 25px;
+        border-radius: 15px;
+        border: 1px solid #ff69b4;
+        display: none;
+        text-align: center;
+      }
+
+      .stat {
+        margin: 0 10px;
+        font-weight: bold;
+        font-size: 1.2rem;
+      }
+      #lives {
+        color: #ff4d4d;
+        letter-spacing: 2px;
+      }
+
+      .screen {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.95);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        text-align: center;
+      }
+
+      button {
+        padding: 15px 40px;
+        font-size: 1.2rem;
+        background: #ff1493;
+        border: none;
+        color: white;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-top: 20px;
+      }
+
+      #container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+      }
+
+      .entity {
+        position: absolute;
+        bottom: -100px;
+        font-size: 60px;
+        cursor: crosshair;
+        animation: floatUp linear forwards;
+      }
+
+      @keyframes floatUp {
+        to {
+          transform: translateY(-120vh);
+        }
+      }
+
+      .pop-text {
+        position: absolute;
+        font-weight: bold;
+        pointer-events: none;
+        animation: fadeUp 0.6s forwards;
+      }
+
+      @keyframes fadeUp {
+        to {
+          transform: translateY(-40px);
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="start-screen" class="screen">
+      <h1 style="color: #ff69b4">🏹 Heart Pop Survival</h1>
+      <p>TARGET: <b>50 Points</b> in 30 Seconds</p>
+      <p>⚠️ 3 💣 = INSTANT LOSE</p>
+      <button onclick="startGame()">Start Mission</button>
+    </div>
+
+    <div id="ui-layer">
+      <div id="target-info">Target: 50</div>
+      <div id="scoreboard">
+        <span class="stat">Time: <span id="time">30</span></span>
+        <span class="stat">Score: <span id="score">0</span></span>
+        <span class="stat">Lives: <span id="lives">♥♥♥</span></span>
+      </div>
+    </div>
+
+    <div id="container"></div>
+
+    <div id="end-screen" class="screen" style="display: none">
+      <h1 id="end-title">Game Over</h1>
+      <p id="end-msg"></p>
+      <p>Final Score: <span id="final-score">0</span></p>
+      <button onclick="location.reload()">Try Again</button>
+    </div>
+
+    <script>
+      const container = document.getElementById("container");
+      const scoreEl = document.getElementById("score");
+      const timeEl = document.getElementById("time");
+      const livesEl = document.getElementById("lives");
+
+      let score = 0;
+      let timeLeft = 30;
+      let lives = 3;
+      let gameActive = false;
+      const TARGET_SCORE = 50;
+
+      function updateLivesDisplay() {
+        livesEl.textContent = "♥".repeat(lives) + "🖤".repeat(3 - lives);
+      }
+
+      function createEntity() {
+        if (!gameActive) return;
+
+        const entity = document.createElement("div");
+        entity.className = "entity";
+
+        const rand = Math.random() * 100;
+        let type;
+
+        if (rand > 85) {
+          // Bomb
+          type = { icon: "💣", pts: 0, life: -1, color: "red", text: "OUCH!" };
+        } else if (rand > 70) {
+          // Star
+          type = { icon: "✨", pts: 5, life: 0, color: "gold", text: "+5" };
+        } else {
+          // Heart
+          type = { icon: "❤️", pts: 1, life: 0, color: "#ff69b4", text: "+1" };
+        }
+
+        entity.innerHTML = type.icon;
+        entity.style.left = Math.random() * (window.innerWidth - 70) + "px";
+        entity.style.animationDuration = Math.random() * 2 + 2 + "s";
+
+        entity.onmousedown = (e) => {
+          if (!gameActive) return;
+
+          score += type.pts;
+          lives += type.life;
+
+          scoreEl.textContent = score;
+          updateLivesDisplay();
+          popText(e.clientX, e.clientY, type.text, type.color);
+
+          entity.remove();
+
+          if (lives <= 0) endGame("LOSE");
+        };
+
+        entity.onanimationend = () => entity.remove();
+        container.appendChild(entity);
+      }
+
+      function popText(x, y, txt, color) {
+        const div = document.createElement("div");
+        div.className = "pop-text";
+        div.style.left = x + "px";
+        div.style.top = y + "px";
+        div.style.color = color;
+        div.textContent = txt;
+        container.appendChild(div);
+        setTimeout(() => div.remove(), 600);
+      }
+
+      function startGame() {
+        document.getElementById("start-screen").style.display = "none";
+        document.getElementById("scoreboard").style.display = "block";
+        gameActive = true;
+
+        const spawner = setInterval(createEntity, 400);
+        const timer = setInterval(() => {
+          timeLeft--;
+          timeEl.textContent = timeLeft;
+
+          if (timeLeft <= 0) {
+            clearInterval(spawner);
+            clearInterval(timer);
+            endGame(score >= TARGET_SCORE ? "WIN" : "LOSE_SCORE");
+          } else if (!gameActive) {
+            clearInterval(spawner);
+            clearInterval(timer);
+          }
+        }, 1000);
+      }
+
+      function endGame(reason) {
+        gameActive = false;
+        container.innerHTML = "";
+        const screen = document.getElementById("end-screen");
+        const title = document.getElementById("end-title");
+        const msg = document.getElementById("end-msg");
+
+        screen.style.display = "flex";
+        document.getElementById("final-score").textContent = score;
+
+        if (reason === "WIN") {
+          title.textContent = "VICTORY! 🎉";
+          title.style.color = "#4CAF50";
+          msg.textContent = "Target reached! You are a Heart Hunter!";
+        } else if (reason === "LOSE_SCORE") {
+          title.textContent = "MISSION FAILED";
+          title.style.color = "#ff4d4d";
+          msg.textContent = `You needed ${TARGET_SCORE} points, but only got ${score}.`;
+        } else {
+          title.textContent = "BOOM! 💥";
+          title.style.color = "#ff4d4d";
+          msg.textContent = "You hit too many bombs!";
+        }
+      }
+    </script>
+  </body>
+</html>

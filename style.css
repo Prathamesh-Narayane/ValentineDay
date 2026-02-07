@@ -1,0 +1,162 @@
+:root {
+  --primary-pink: #ff4d6d;
+  --soft-pink: #fff0f3;
+  --dark-pink: #c9184a;
+  --white: #ffffff;
+}
+
+body {
+  font-family: "Segoe UI", sans-serif;
+  background-color: var(--soft-pink);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  transition: background-image 0.8s ease-in-out;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  color: #333;
+}
+
+.bg-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 240, 243, 0.85);
+  z-index: -1;
+  transition: background 0.6s;
+}
+
+header {
+  text-align: center;
+  padding: 40px 20px;
+  z-index: 10;
+}
+
+h1 {
+  color: var(--dark-pink);
+  text-shadow: 1px 1px 2px white;
+}
+
+.timeline {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 25px;
+  width: 90%;
+  max-width: 1100px;
+  z-index: 1;
+  padding-bottom: 50px;
+}
+
+.day-card {
+  background: var(--white);
+  padding: 25px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+  transition: 0.4s;
+  position: relative;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.locked {
+  filter: grayscale(1) opacity(0.6);
+  cursor: not-allowed;
+}
+
+.pass-area {
+  margin-top: 15px;
+  display: none;
+  /* Shown via JS when card clicked */
+}
+
+.pass-input {
+  width: 80%;
+  padding: 8px;
+  border: 2px solid var(--soft-pink);
+  border-radius: 10px;
+  text-align: center;
+  outline: none;
+  font-weight: bold;
+}
+
+.pass-btn {
+  margin-top: 10px;
+  background: var(--primary-pink);
+  color: white;
+  border: none;
+  padding: 5px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+@keyframes shake {
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  75% {
+    transform: translateX(5px);
+  }
+}
+
+.error-shake {
+  animation: shake 0.3s ease-in-out;
+  border: 2px solid red !important;
+}
+
+#surprise-display {
+  display: none;
+  width: 85%;
+  max-width: 550px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(15px);
+  border-radius: 30px;
+  padding: 40px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+  text-align: center;
+  margin: 40px auto;
+  z-index: 20;
+}
+
+.love-code {
+  font-family: 'Courier New', monospace;
+  background: #282a36;
+  color: #50fa7b;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: left;
+  margin: 25px 0;
+  font-size: 0.95rem;
+  border-left: 5px solid var(--primary-pink);
+}
+
+.back-btn {
+  background: var(--dark-pink);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.timer {
+  font-size: 0.8rem;
+  color: #888;
+  margin-top: 10px;
+}

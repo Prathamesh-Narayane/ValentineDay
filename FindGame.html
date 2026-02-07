@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Memory Match - Pro Edition</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      /* Keeping your exact original styling base */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+
+      body {
+        font-family: "Comic Sans MS", "Arial", sans-serif;
+        background: #ffe4b5;
+        padding: 15px;
+        min-height: 100vh;
+        touch-action: manipulation;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 0 auto;
+      }
+
+      .header {
+        text-align: center;
+        background: #fff;
+        padding: 15px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 6px 0 #d4a574;
+        border: 4px solid #fff;
+      }
+
+      h1 {
+        color: #ff6b9d;
+        font-size: 1.8em;
+        margin-bottom: 15px;
+      }
+
+      .stats {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .stat {
+        background: #ffa07a;
+        color: #fff;
+        padding: 8px 15px;
+        border-radius: 15px;
+        box-shadow: 0 4px 0 #d4886a;
+        border: 3px solid #fff;
+        flex: 1;
+        min-width: 80px;
+      }
+
+      .stat-label {
+        font-size: 0.75em;
+        text-transform: uppercase;
+      }
+      .stat-value {
+        font-size: 1.2em;
+        font-weight: bold;
+      }
+
+      .game-board {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+        margin-bottom: 25px;
+      }
+
+      .card {
+        background: transparent;
+        aspect-ratio: 1;
+        cursor: pointer;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.5s;
+      }
+
+      /* Stays flipped when matched */
+      .card.flipped,
+      .card.matched {
+        transform: rotateY(180deg);
+      }
+
+      .card.matched {
+        pointer-events: none;
+      }
+      .card.matched .card-back {
+        border: 4px solid #4caf50;
+        box-shadow: 0 0 15px rgba(76, 175, 80, 0.4);
+      }
+
+      .card-front,
+      .card-back {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        backface-visibility: hidden;
+        border-radius: 15px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .card-front {
+        background: #fff;
+        color: #ff6b9d;
+        font-size: 2em;
+        box-shadow: 0 4px 0 #d4a574;
+        border: 4px solid #87ceeb;
+      }
+
+      .card-back {
+        background: #fff;
+        transform: rotateY(180deg);
+        overflow: hidden;
+        box-shadow: 0 4px 0 #d4a574;
+        border: 4px solid #98d8c8;
+      }
+
+      .card-back img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      /* Match Feedback Image */
+      .match-pop {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        width: 150px;
+        height: 150px;
+        z-index: 1000;
+        border: 5px solid white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        pointer-events: none;
+      }
+      .match-pop.show {
+        transform: translate(-50%, -50%) scale(1);
+      }
+      .match-pop img {
+        width: 100%;
+        height: 100%;
+        border-radius: 15px;
+        object-fit: cover;
+      }
+
+      .btn {
+        background: #98d8c8;
+        color: #fff;
+        border: 4px solid #fff;
+        padding: 12px 30px;
+        border-radius: 15px;
+        font-size: 1.1em;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 5px 0 #7ab8a8;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        justify-content: center;
+        align-items: center;
+        z-index: 100;
+        padding: 20px;
+      }
+
+      .modal.show {
+        display: flex;
+      }
+
+      .modal-content {
+        background: #fff;
+        padding: 30px;
+        border-radius: 25px;
+        width: 100%;
+        max-width: 400px;
+        text-align: center;
+        border: 6px solid #ff6b9d;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1><i class="fas fa-star"></i> Memory Match</h1>
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-label">Flips Left</div>
+            <div class="stat-value" id="flips">20</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Time</div>
+            <div class="stat-value" id="time">1:00</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Pairs</div>
+            <div class="stat-value" id="matches">0/8</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="game-board" id="gameBoard"></div>
+
+      <div class="controls">
+        <button class="btn" onclick="newGame()">
+          <i class="fas fa-redo"></i> New Game
+        </button>
+      </div>
+    </div>
+
+    <div id="matchPop" class="match-pop">
+      <img id="matchPopImg" src="" />
+    </div>
+
+    <div class="modal" id="winModal">
+      <div class="modal-content">
+        <h2 id="modalStatus">🏆 You Win! 🏆</h2>
+        <p style="margin: 20px 0; color: #ffa07a; font-size: 1.2em">
+          Flips Left: <span id="finalFlips"></span><br />
+          Time: <span id="finalTime"></span>
+        </p>
+        <button class="btn" onclick="newGame()">Play Again</button>
+      </div>
+    </div>
+
+    <script>
+      var images = [
+        "https://images.unsplash.com/photo-1425082661705-1834bfd09dca?w=400",
+        "https://images.unsplash.com/photo-1548681528-6a5c45b66b42?w=400",
+        "https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?w=400",
+        "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=400",
+        "https://images.unsplash.com/photo-1535268647677-300dbf3d78d1?w=400",
+        "https://images.unsplash.com/photo-1574158622682-e40e69881006?w=400",
+        "https://images.unsplash.com/photo-1560807707-8cc77767d783?w=400",
+        "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=400",
+      ];
+
+      var firstCard, secondCard;
+      var canFlip = true;
+      var matches = 0;
+      var flipsLeft = 20;
+      var seconds = 60;
+      var timerInterval;
+      var gameStarted = false;
+
+      function startGame() {
+        var gameBoard = document.getElementById("gameBoard");
+        gameBoard.innerHTML = "";
+        var cardImages = images.concat(images);
+        cardImages.sort(() => Math.random() - 0.5);
+
+        cardImages.forEach((imgUrl) => {
+          var card = document.createElement("div");
+          card.className = "card";
+          card.innerHTML = `
+            <div class="card-front"><i class="fas fa-heart"></i></div>
+            <div class="card-back"><img src="${imgUrl}"></div>
+          `;
+          card.onclick = flipCard;
+          card.dataset.image = imgUrl;
+          gameBoard.appendChild(card);
+        });
+
+        resetState();
+      }
+
+      function resetState() {
+        firstCard = null;
+        secondCard = null;
+        canFlip = true;
+        matches = 0;
+        flipsLeft = 20;
+        seconds = 60;
+        gameStarted = false;
+        clearInterval(timerInterval);
+        updateStats();
+      }
+
+      function flipCard() {
+        if (
+          !canFlip ||
+          this.classList.contains("flipped") ||
+          this.classList.contains("matched")
+        )
+          return;
+        if (this === firstCard) return;
+
+        if (!gameStarted) {
+          gameStarted = true;
+          startTimer();
+        }
+
+        this.classList.add("flipped");
+
+        if (!firstCard) {
+          firstCard = this;
+        } else {
+          secondCard = this;
+          canFlip = false;
+          flipsLeft--; // Count down the flips
+          updateStats();
+          checkMatch();
+        }
+      }
+
+      function checkMatch() {
+        var isMatch = firstCard.dataset.image === secondCard.dataset.image;
+
+        if (isMatch) {
+          // Bonus Time: Add 5 seconds for every match
+          seconds += 5;
+          showMatchPop(firstCard.dataset.image);
+
+          setTimeout(() => {
+            firstCard.classList.add("matched");
+            secondCard.classList.add("matched");
+            matches++;
+            updateStats();
+            [firstCard, secondCard] = [null, null];
+            canFlip = true;
+            if (matches === 8) endGame(true);
+          }, 500);
+        } else {
+          setTimeout(() => {
+            firstCard.classList.remove("flipped");
+            secondCard.classList.remove("flipped");
+            [firstCard, secondCard] = [null, null];
+            canFlip = true;
+
+            // Check if user ran out of flips
+            if (flipsLeft <= 0) endGame(false, "Out of Flips!");
+          }, 1000);
+        }
+      }
+
+      function showMatchPop(url) {
+        const pop = document.getElementById("matchPop");
+        document.getElementById("matchPopImg").src = url;
+        pop.classList.add("show");
+        setTimeout(() => pop.classList.remove("show"), 800);
+      }
+
+      function startTimer() {
+        timerInterval = setInterval(() => {
+          seconds--;
+          updateStats();
+          if (seconds <= 0) {
+            endGame(false, "Out of Time!");
+          }
+        }, 1000);
+      }
+
+      function updateStats() {
+        document.getElementById("flips").textContent = flipsLeft;
+        document.getElementById("matches").textContent = matches + "/8";
+        var m = Math.floor(seconds / 60);
+        var s = seconds % 60;
+        const timeVal = `${m}:${s < 10 ? "0" + s : s}`;
+        document.getElementById("time").textContent = timeVal;
+
+        // Visual warnings
+        document.getElementById("time").style.color =
+          seconds <= 10 ? "red" : "inherit";
+        document.getElementById("flips").style.color =
+          flipsLeft <= 5 ? "red" : "inherit";
+      }
+
+      function endGame(win, reason = "") {
+        clearInterval(timerInterval);
+        gameStarted = false;
+
+        const statusEl = document.getElementById("modalStatus");
+        if (win) {
+          statusEl.textContent = "🏆 You Win! 🏆";
+        } else {
+          statusEl.textContent =
+            reason === "Out of Flips!"
+              ? "❌ Out of Flips! ❌"
+              : "⏰ Time's Up! ⏰";
+        }
+
+        document.getElementById("finalFlips").textContent = flipsLeft;
+        document.getElementById("finalTime").textContent =
+          document.getElementById("time").textContent;
+        document.getElementById("winModal").classList.add("show");
+      }
+
+      function newGame() {
+        document.getElementById("winModal").classList.remove("show");
+        startGame();
+      }
+
+      startGame();
+    </script>
+  </body>
+</html>

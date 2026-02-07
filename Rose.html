@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rose Day for Leena</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap");
+
+      :root {
+        --rose-color: #d52d58;
+        --glow-color: #f594b8;
+        --bg-color: #122139;
+      }
+
+      html,
+      body {
+        height: 100%;
+        width: 100%;
+        background: var(--bg-color);
+        overflow: hidden;
+        margin: 0;
+        transition: background 1s ease;
+        font-family: sans-serif;
+      }
+
+      /* Flex container to handle desktop vs mobile layout */
+      .main-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        width: 100%;
+        gap: 20px;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+
+      @media (min-width: 768px) {
+        .main-wrapper {
+          flex-direction: row;
+          justify-content: space-around;
+        }
+      }
+
+      /* --- ROSE CONTAINER --- */
+      .container {
+        width: 100px;
+        height: 300px;
+        position: relative;
+        transform: scale(0.65);
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+
+      .container div {
+        position: absolute;
+      }
+
+      .container .glass {
+        height: 420px;
+        width: 250px;
+        border: 3px solid rgba(255, 255, 255, 0.5);
+        border-radius: 300px 300px 0px 0px;
+        left: -80px;
+        top: -100px;
+        border-bottom: 15px solid rgba(255, 255, 255, 0.5);
+        z-index: 10;
+      }
+
+      .leena-name {
+        position: absolute;
+        bottom: -130px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-family: "Great Vibes", cursive;
+        font-size: 4rem;
+        color: white;
+        text-shadow: 0 0 20px var(--glow-color);
+        z-index: 20;
+        pointer-events: none;
+        white-space: nowrap;
+      }
+
+      .container .glow {
+        width: 170px;
+        height: 170px;
+        border-radius: 100%;
+        border: 1px solid rgba(245, 148, 184, 0.47);
+        box-shadow: 0px 0px 10px #f594b8;
+        left: -40px;
+        top: -40px;
+        transition: all 0.5s ease;
+        animation: glowing 2.5s ease-in-out infinite;
+      }
+
+      .container .rose-petals > div {
+        background: var(--rose-color);
+        width: 45px;
+        height: 80px;
+        transition: all 0.5s ease-out;
+      }
+
+      .container .rose-petals > div:nth-child(1) {
+        border-radius: 15px;
+        left: 20px;
+        top: -6px;
+        background: #d52d58;
+      }
+      .container .rose-petals > div:nth-child(2),
+      .container .rose-petals > div:nth-child(4),
+      .container .rose-petals > div:nth-child(6) {
+        border-radius: 0px 30px 0px 30px;
+        background: #b81b43;
+        left: 0;
+        transform-origin: bottom right;
+      }
+      .container .rose-petals > div:nth-child(3),
+      .container .rose-petals > div:nth-child(5),
+      .container .rose-petals > div:nth-child(7) {
+        border-radius: 30px 0px 30px 0px;
+        left: 40px;
+        transform-origin: bottom left;
+      }
+
+      /* Petal Animations */
+      .container .rose-petals > div:nth-child(2) {
+        animation: openRose2 3s ease-in-out forwards;
+        z-index: 5;
+        background: #9e183a;
+        top: 10px;
+        height: 70px;
+        animation-delay: 1s;
+      }
+      .container .rose-petals > div:nth-child(3) {
+        animation: openRose3 3s ease-in-out forwards;
+        z-index: 4;
+        background: #9e183a;
+        top: 10px;
+        height: 70px;
+        animation-delay: 1s;
+      }
+      .container .rose-petals > div:nth-child(4) {
+        animation: openRose4 3s ease-in-out forwards;
+        z-index: 3;
+        background: #b81b43;
+        top: 5px;
+        height: 75px;
+        animation-delay: 1s;
+      }
+      .container .rose-petals > div:nth-child(5) {
+        animation: openRose5 3s ease-in-out forwards;
+        z-index: 2;
+        background: #b81b43;
+        top: 5px;
+        height: 75px;
+        animation-delay: 1s;
+      }
+      .container .rose-petals > div:nth-child(6) {
+        animation: openRose6 3s ease-in-out forwards;
+        z-index: 1;
+        background: #c9204b;
+        animation-delay: 1s;
+      }
+      .container .rose-petals > div:nth-child(7) {
+        animation: openRose7 3s ease-in-out forwards;
+        z-index: 0;
+        background: #c9204b;
+        animation-delay: 1s;
+      }
+
+      .container .rose-leaves > div:nth-child(1) {
+        width: 6px;
+        height: 230px;
+        top: 80px;
+        background: #066406;
+        left: 40px;
+      }
+      .container .rose-leaves > div:nth-last-child(1) {
+        width: 55px;
+        height: 30px;
+        background: #338f37;
+        top: 60px;
+        left: 15px;
+        border-radius: 100px;
+      }
+
+      .container .thorns > div {
+        width: 30px;
+        height: 30px;
+        background: #066406;
+        top: 100px;
+        left: 10px;
+      }
+      .container .thorns > div:after,
+      .container .thorns > div:before {
+        content: "";
+        position: absolute;
+        border-radius: 100%;
+        background: var(--bg-color);
+        width: 41px;
+        height: 31px;
+        transition: background 1s;
+      }
+      .container .thorns > div:after {
+        left: -12px;
+        top: 17px;
+      }
+      .container .thorns > div:before {
+        left: -11px;
+        top: -11px;
+      }
+
+      .container .sparkles > div {
+        width: 4px;
+        height: 4px;
+        border-radius: 100px;
+        background: #ff96c0;
+        box-shadow: 0px 0px 12px 2px #ff4e85;
+        bottom: 0;
+        opacity: 0;
+        animation: sparkle 4s ease-in-out infinite;
+      }
+
+      .text-box {
+        color: white;
+        text-align: center;
+        max-width: 90%;
+        z-index: 30;
+        margin-top: 50px;
+      }
+
+      @media (min-width: 768px) {
+        .text-box {
+          margin-top: 0;
+          max-width: 400px;
+        }
+      }
+
+      #surprise {
+        display: none;
+        margin-top: 25px;
+        padding: 20px;
+        border: 1px solid var(--glow-color);
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        animation: fadeIn 1s forwards;
+      }
+
+      /* BACK BUTTON STYLES */
+      .back-container {
+        text-align: center;
+        margin-top: 30px;
+        padding-bottom: 20px;
+      }
+      .back-btn-quest {
+        display: inline-block;
+        padding: 10px 25px;
+        background-color: var(--rose-color);
+        color: white;
+        text-decoration: none;
+        border-radius: 50px;
+        font-family: sans-serif;
+        font-weight: 600;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+      }
+      .back-btn-quest:hover {
+        background-color: transparent;
+        color: white;
+        border: 2px solid var(--glow-color);
+        transform: translateY(-3px);
+      }
+
+      /* KEYFRAMES */
+      @keyframes openRose2 {
+        100% {
+          transform: rotate(-60deg) scale(1.05);
+          top: 210px;
+          left: -30px;
+        }
+      }
+      @keyframes openRose3 {
+        100% {
+          transform: rotate(60deg);
+        }
+      }
+      @keyframes openRose4 {
+        100% {
+          transform: rotate(-30deg);
+        }
+      }
+      @keyframes openRose5 {
+        100% {
+          transform: rotate(30deg);
+        }
+      }
+      @keyframes glowing {
+        50% {
+          box-shadow: 0px 0px 60px #f594b8;
+        }
+      }
+      @keyframes sparkle {
+        50% {
+          opacity: 1;
+        }
+        100% {
+          bottom: 250px;
+        }
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+      @keyframes fly {
+        to {
+          transform: translateY(-300px);
+          opacity: 0;
+        }
+      }
+      @keyframes drop {
+        0% {
+          transform: translateY(0vh) rotate(0deg);
+          opacity: 1;
+        }
+        100% {
+          transform: translateY(110vh) rotate(360deg);
+          opacity: 0;
+        }
+      }
+
+      .heart {
+        position: absolute;
+        font-size: 2rem;
+        color: var(--glow-color);
+        pointer-events: none;
+        animation: fly 2s forwards;
+        z-index: 100;
+      }
+      .p-drop {
+        position: fixed;
+        top: -50px;
+        pointer-events: none;
+        border-radius: 70% 0 70% 40%;
+        box-shadow: inset -2px -2px rgba(0, 0, 0, 0.1);
+        animation: drop linear forwards;
+        z-index: 50;
+      }
+    </style>
+  </head>
+  <body onclick="makeMagic(event)">
+    <div class="main-wrapper">
+      <div class="container" id="rose">
+        <div class="glass"></div>
+        <div class="thorns">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+        <div class="glow"></div>
+        <div class="rose-leaves">
+          <div></div>
+          <div></div>
+        </div>
+        <div class="rose-petals">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+        <div class="sparkles">
+          <div style="left: 60px; animation-delay: 1s"></div>
+          <div style="left: 158px; animation-delay: 2s"></div>
+          <div style="left: -22px; animation-delay: 3s"></div>
+          <div style="left: 177px; animation-delay: 2s"></div>
+          <div style="left: 45px; animation-delay: 1s"></div>
+        </div>
+        <div class="leena-name">Leena</div>
+      </div>
+
+      <div class="text-box">
+        <div style="font-style: italic; font-size: 1.1rem; line-height: 1.7">
+          Everything About You Is Interesting,<br />
+          Your Smile, Your Laughter, Your Beauty,<br />
+          Your Scent And Your Company.<br />
+          I Always Think Of You With A Smile On My Face.
+        </div>
+        <div id="surprise">
+          <h2
+            style="
+              margin: 0;
+              font-family: &quot;Great Vibes&quot;, cursive;
+              color: var(--glow-color);
+              font-size: 2.2rem;
+            "
+          >
+            I Love You My Precious Rose
+          </h2>
+        </div>
+        <p style="color: #888; margin-top: 20px; font-size: 0.8rem">
+          (Tap anywhere to see magic)
+        </p>
+        <div class="back-container">
+          <a href="index.html" class="back-btn-quest">← Back to Love Quest</a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const moods = [
+        { bg: "#122139", rose: "#d52d58", glow: "#f594b8" },
+        { bg: "#1a0b22", rose: "#9b59b6", glow: "#d291ff" },
+        { bg: "#220b0b", rose: "#e67e22", glow: "#ffbd82" },
+        { bg: "#0b221a", rose: "#1abc9c", glow: "#82ffe9" },
+      ];
+      let index = 0;
+      let rain = null;
+
+      function makeMagic(e) {
+        document.getElementById("surprise").style.display = "block";
+        index = (index + 1) % moods.length;
+        const m = moods[index];
+        document.documentElement.style.setProperty("--bg-color", m.bg);
+        document.documentElement.style.setProperty("--rose-color", m.rose);
+        document.documentElement.style.setProperty("--glow-color", m.glow);
+
+        const h = document.createElement("div");
+        h.innerHTML = "❤";
+        h.className = "heart";
+        const x = e.clientX || (e.touches && e.touches[0].clientX);
+        const y = e.clientY || (e.touches && e.touches[0].clientY);
+        h.style.left = x + "px";
+        h.style.top = y + "px";
+        document.body.appendChild(h);
+        setTimeout(() => h.remove(), 2000);
+
+        if (!rain) rain = setInterval(dropPetal, 400);
+        dropPetal();
+      }
+
+      function dropPetal() {
+        const p = document.createElement("div");
+        p.className = "p-drop";
+        const s = Math.random() * 15 + 10 + "px";
+        p.style.width = s;
+        p.style.height = s;
+        p.style.left = Math.random() * 100 + "vw";
+        p.style.background = moods[index].rose;
+        p.style.animationDuration = Math.random() * 2 + 3 + "s";
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 5000);
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Valentine's Challenge</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-color: #ff4d6d;
+        --gold: #ffb703;
+        --bg-gradient: linear-gradient(135deg, #fff0f3 0%, #ffccd5 100%);
+        --font-heading: "Great Vibes", cursive;
+        --font-body: "Poppins", sans-serif;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        touch-action: none;
+      }
+      body {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        font-family: var(--font-body);
+        background: var(--bg-gradient);
+        user-select: none;
+      }
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+
+      #ui-layer {
+        position: absolute;
+        top: 15px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        z-index: 10;
+        pointer-events: none;
+      }
+      .stat-pill {
+        background: rgba(255, 255, 255, 0.9);
+        padding: 5px 15px;
+        border-radius: 20px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #c9184a;
+      }
+      .progress-bar {
+        width: 120px;
+        height: 10px;
+        background: #ffe5ec;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      #love-fill {
+        width: 0%;
+        height: 100%;
+        background: var(--primary-color);
+        transition: width 0.3s;
+      }
+
+      .screen {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: rgba(255, 240, 243, 0.95);
+        z-index: 20;
+        padding: 20px;
+        text-align: center;
+      }
+      .hidden {
+        display: none !important;
+      }
+      h1 {
+        font-family: var(--font-heading);
+        font-size: clamp(3rem, 12vw, 5rem);
+        color: #c9184a;
+      }
+      .btn {
+        padding: 12px 35px;
+        border: none;
+        border-radius: 50px;
+        background: var(--primary-color);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 20px;
+      }
+      .yes-btn {
+        background: #2dc653;
+        font-size: 1.2rem;
+      }
+      .no-btn {
+        background: var(--gold);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="ui-layer">
+      <div class="stat-pill">
+        <span>❤️ Love:</span>
+        <div class="progress-bar"><div id="love-fill"></div></div>
+      </div>
+      <div class="stat-pill">
+        <span>💔 Missed: <span id="miss-count">0</span>/20</span>
+      </div>
+    </div>
+
+    <div id="start-screen" class="screen">
+      <h1>Catch the Love!</h1>
+      <p>Score 100 points to win.<br />Miss 30 and you lose!</p>
+      <button id="start-btn" class="btn">Start Game</button>
+    </div>
+
+    <div id="fail-screen" class="screen hidden">
+      <h1>Game Over!</h1>
+      <p>Don't worry, my heart is still yours.</p>
+      <button id="retry-btn" class="btn">Try Again</button>
+    </div>
+
+    <div id="proposal-screen" class="screen hidden">
+      <h1>Will You Be My Valentine?</h1>
+      <div
+        style="display: flex; flex-direction: column; gap: 10px; width: 200px"
+      >
+        <button id="yes-btn" class="btn yes-btn">YES! ❤️</button>
+        <button id="no-btn" class="btn no-btn">No</button>
+      </div>
+    </div>
+
+    <div id="celebration-screen" class="screen hidden">
+      <h1>Happy Valentine's Day! 💍</h1>
+      <p>You caught my heart! I love you!</p>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <script>
+      const canvas = document.getElementById("gameCanvas");
+      const ctx = canvas.getContext("2d");
+      let gameState = "START",
+        score = 0,
+        misses = 0,
+        player,
+        hearts = [],
+        popTexts = [],
+        confetti = [];
+      const WIN_SCORE = 100;
+      MAX_MISSES = 30;
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const pW = Math.min(canvas.width * 0.28, 110);
+        player = {
+          w: pW,
+          x: canvas.width / 2 - pW / 2,
+          y: canvas.height - 100,
+        };
+      }
+
+      class Heart {
+        constructor() {
+          this.isGold = Math.random() < 0.12;
+          this.size = this.isGold ? 35 : 25;
+          this.x = Math.random() * (canvas.width - this.size) + this.size / 2;
+          this.y = -this.size;
+          this.speed = Math.random() * 2 + 3 + score / 10;
+        }
+        draw() {
+          ctx.fillStyle = this.isGold ? "#ffb703" : "#ff4d6d";
+          ctx.beginPath();
+          ctx.arc(this.x - this.size / 4, this.y, this.size / 4, Math.PI, 0);
+          ctx.arc(this.x + this.size / 4, this.y, this.size / 4, Math.PI, 0);
+          ctx.lineTo(this.x, this.y + this.size / 1.5);
+          ctx.fill();
+        }
+      }
+
+      class PopText {
+        constructor(x, y, txt, color) {
+          this.x = x;
+          this.y = y;
+          this.txt = txt;
+          this.color = color;
+          this.life = 1.0;
+        }
+        update() {
+          this.y -= 2;
+          this.life -= 0.02;
+        }
+        draw() {
+          ctx.globalAlpha = this.life;
+          ctx.fillStyle = this.color;
+          ctx.font = `bold ${this.life * 20 + 10}px Poppins`;
+          ctx.fillText(this.txt, this.x, this.y);
+          ctx.globalAlpha = 1;
+        }
+      }
+
+      class Confetto {
+        constructor() {
+          this.x = canvas.width / 2;
+          this.y = canvas.height / 2;
+          this.size = Math.random() * 8 + 4;
+          this.spX = (Math.random() - 0.5) * 15;
+          this.spY = (Math.random() - 0.5) * 15;
+          this.color = `hsl(${Math.random() * 360}, 80%, 60%)`;
+        }
+        update() {
+          this.x += this.spX;
+          this.y += this.spY;
+          this.spY += 0.2;
+        }
+        draw() {
+          ctx.fillStyle = this.color;
+          ctx.fillRect(this.x, this.y, this.size, this.size);
+        }
+      }
+
+      function update() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        if (gameState === "PLAYING") {
+          ctx.fillStyle = "#c9184a";
+          ctx.beginPath();
+          ctx.roundRect(player.x, player.y, player.w, 15, 20);
+          ctx.fill();
+
+          if (Math.random() < 0.04) hearts.push(new Heart());
+
+          hearts.forEach((h, i) => {
+            h.y += h.speed;
+            h.draw();
+            if (
+              h.y > player.y - 10 &&
+              h.y < player.y + 20 &&
+              h.x > player.x &&
+              h.x < player.x + player.w
+            ) {
+              const pts = h.isGold ? 3 : 1;
+              score += pts;
+              popTexts.push(
+                new PopText(
+                  h.x,
+                  h.y,
+                  h.isGold ? "GOLDEN! +3" : "+1",
+                  h.isGold ? "#ffb703" : "#ff4d6d",
+                ),
+              );
+              hearts.splice(i, 1);
+              document.getElementById("love-fill").style.width =
+                Math.min(100, (score / WIN_SCORE) * 100) + "%";
+              if (score >= WIN_SCORE) {
+                gameState = "PROPOSAL";
+                document
+                  .getElementById("proposal-screen")
+                  .classList.remove("hidden");
+              }
+            } else if (h.y > canvas.height) {
+              hearts.splice(i, 1);
+              misses++;
+              document.getElementById("miss-count").innerText = misses;
+              if (misses >= MAX_MISSES) {
+                gameState = "FAIL";
+                document
+                  .getElementById("fail-screen")
+                  .classList.remove("hidden");
+              }
+            }
+          });
+        }
+
+        popTexts.forEach((t, i) => {
+          t.update();
+          t.draw();
+          if (t.life <= 0) popTexts.splice(i, 1);
+        });
+        confetti.forEach((c, i) => {
+          c.update();
+          c.draw();
+          if (c.y > canvas.height) confetti.splice(i, 1);
+        });
+
+        requestAnimationFrame(update);
+      }
+
+      const resetGame = () => {
+        score = 0;
+        misses = 0;
+        hearts = [];
+        popTexts = [];
+        confetti = [];
+        document.getElementById("love-fill").style.width = "0%";
+        document.getElementById("miss-count").innerText = "0";
+        document
+          .querySelectorAll(".screen")
+          .forEach((s) => s.classList.add("hidden"));
+        gameState = "PLAYING";
+      };
+
+      document.getElementById("start-btn").onclick = resetGame;
+      document.getElementById("retry-btn").onclick = resetGame;
+      document.getElementById("yes-btn").onclick = () => {
+        document.getElementById("proposal-screen").classList.add("hidden");
+        document
+          .getElementById("celebration-screen")
+          .classList.remove("hidden");
+        for (let i = 0; i < 150; i++) confetti.push(new Confetto());
+      };
+
+      const move = (e) => {
+        const x = e.touches ? e.touches[0].clientX : e.clientX;
+        if (player)
+          player.x = Math.max(
+            0,
+            Math.min(canvas.width - player.w, x - player.w / 2),
+          );
+      };
+      window.addEventListener("mousemove", move);
+      window.addEventListener(
+        "touchmove",
+        (e) => {
+          e.preventDefault();
+          move(e);
+        },
+        { passive: false },
+      );
+
+      const noBtn = document.getElementById("no-btn");
+      noBtn.onmouseover = noBtn.ontouchstart = (e) => {
+        e.preventDefault();
+        noBtn.style.position = "fixed";
+        noBtn.style.left = Math.random() * (window.innerWidth - 80) + "px";
+        noBtn.style.top = Math.random() * (window.innerHeight - 40) + "px";
+      };
+
+      window.addEventListener("resize", resize);
+      resize();
+      update();
+    </script>
+  </body>
+</html>
